@@ -10,6 +10,7 @@
         <module name="venue-management" />
         <module name="user-service" />
         <module name="discovery-server" />
+        <module name="sensor-data-producer" />
         <module name="ticket-service" />
       </profile>
     </annotationProcessing>
@@ -18,6 +19,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
       <module name="discovery-server" options="-parameters" />
+      <module name="sensor-data-producer" options="-parameters" />
       <module name="ticket-service" options="-parameters" />
       <module name="user-service" options="-parameters" />
       <module name="venue-management" options="-parameters" />
