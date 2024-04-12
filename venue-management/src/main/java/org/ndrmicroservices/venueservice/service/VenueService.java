@@ -1,5 +1,7 @@
 package org.ndrmicroservices.venueservice.service;
 
+import lombok.RequiredArgsConstructor;
+import org.ndrmicroservices.venueservice.dto.ConsumeObject;
 import org.ndrmicroservices.venueservice.dto.VenueAvailabilityDto;
 import org.ndrmicroservices.venueservice.model.Venue;
 import org.ndrmicroservices.venueservice.repository.VenueRepository;
@@ -10,26 +12,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class VenueService {
 
     private final VenueRepository venueRepository;
 
-    @Autowired
-    public VenueService(VenueRepository venueRepository) {
-        this.venueRepository = venueRepository;
-    }
+    public void updateVenueOccupancy(ConsumeObject message) {
 
-    public void updateVenueOccupancy(String message) {
-        // Parse message and update venue occupancy accordingly
-        // Example: venueId:capacity
-        String[] parts = message.split(":");
-        if (parts.length == 2) {
-            Long venueId = Long.parseLong(parts[0]);
-            int capacity = Integer.parseInt(parts[1]);
-            // Update venue occupancy in the database
-            venueRepository.updateOccupancy(venueId, capacity);
-            // Example: venueRepository.updateOccupancy(venueId, capacity);
+        Venue venue = venueRepository.findById(message.getVenueId())
+                .orElseThrow(() -> new RuntimeException("Venue not found"));
+
+        int netCount = message.getPersonInCount() - message.getPersonOutCount();
+
+        if (venue.getCurrentOccupancy() + netCount < 0 || venue.getCurrentOccupancy() + netCount > venue.getCapacity()) {
+            throw new RuntimeException("Invalid occupancy count");
         }
+
+        venue.setCurrentOccupancy(venue.getCurrentOccupancy() + netCount);
+
+        venueRepository.save(venue);
     }
 
     public VenueAvailabilityDto getVenueAvailability(Long venueId) {
@@ -37,7 +38,7 @@ public class VenueService {
                 .orElseThrow(() -> new RuntimeException("Venue not found"));
 
         int totalCapacity = venue.getCapacity();
-        int currentOccupancy = venue.getCurrentOccupancy(); // Implement this method in Venue entity or repository
+        int currentOccupancy = venue.getCurrentOccupancy();
 
         int availableSeats = totalCapacity - currentOccupancy;
 
@@ -49,5 +50,20 @@ public class VenueService {
         return venues.stream()
                 .map(venue -> new VenueAvailabilityDto(venue.getId(), venue.getCapacity() - venue.getCurrentOccupancy(), venue.getCapacity()))
                 .collect(Collectors.toList());
+    }
+
+    public String bookTickets(Long venueId, int numTickets) {
+        Venue venue = venueRepository.findById(venueId)
+                .orElseThrow(() -> new RuntimeException("Venue not found"));
+
+        int availableSeats = venue.getCapacity() - venue.getCurrentOccupancy();
+        if (availableSeats < numTickets) {
+            throw new RuntimeException("Not enough tickets available");
+        }
+
+        venue.setCurrentOccupancy(venue.getCurrentOccupancy() + numTickets);
+        venueRepository.save(venue);
+
+        return "Tickets booked successfully";
     }
 }

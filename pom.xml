@@ -14,7 +14,6 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>user-service</module>
         <module>venue-management</module>
         <module>ticket-service</module>
         <module>api-gateway</module>
