@@ -40,7 +40,7 @@ public class VenueService {
         int totalCapacity = venue.getCapacity();
         int currentOccupancy = venue.getCurrentOccupancy();
 
-        int availableSeats = totalCapacity - currentOccupancy;
+        int availableSeats = currentOccupancy;
 
         return new VenueAvailabilityDto(venueId, availableSeats, totalCapacity);
     }
@@ -56,7 +56,7 @@ public class VenueService {
         Venue venue = venueRepository.findById(venueId)
                 .orElseThrow(() -> new RuntimeException("Venue not found"));
 
-        int availableSeats = venue.getCapacity() - venue.getCurrentOccupancy();
+        int availableSeats = venue.getCurrentOccupancy();
         if (availableSeats < numTickets) {
             throw new RuntimeException("Not enough tickets available");
         }
